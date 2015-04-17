@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    id="com.triarc.sqlitePlugin"
+    id="com.triarc.sqliteplugin"
     version="1.0.3">
 
     <name>Brodysoft SQLitePlugin</name>
-
+	<dependency id="com.triarc.interprocesslock" />
     <license>MIT</license>
 
     <description>Native interface to SQLite for PhoneGap/Cordova. Allows you to use more storage and provides more flexibility than the standard Web SQL database (window.openDatabase).</description>

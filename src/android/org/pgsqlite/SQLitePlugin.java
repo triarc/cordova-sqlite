@@ -13,11 +13,11 @@ import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
-
 import android.util.Base64;
 import android.util.Log;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.IllegalArgumentException;
 import java.lang.Number;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,10 +28,12 @@ import java.util.regex.Pattern;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.triarc.InterprocessLock;
+import com.triarc.LockType;
 
 public class SQLitePlugin extends CordovaPlugin {
 
@@ -194,6 +196,14 @@ public class SQLitePlugin extends CordovaPlugin {
     // --------------------------------------------------------------------------
 
     private void startDatabase(String dbname, CallbackContext cbc) {
+    	try {
+			InterprocessLock.lock(this.webView.getContext(), dbname, "Plugin", LockType.read);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			cbc.error("aquiring the read lock for " + dbname + "failed. process name=> plugin");
+			return;
+		}
         // TODO: is it an issue that we can orphan an existing thread?  What should we do here?
         // If we re-use the existing DBRunner it might be in the process of closing...
         DBRunner r = dbrmap.get(dbname);
@@ -248,6 +258,14 @@ public class SQLitePlugin extends CordovaPlugin {
      * @param dbName   The name of the database file
      */
     private void closeDatabase(String dbName, CallbackContext cbc) {
+    	try {
+			InterprocessLock.release(this.webView.getContext(), dbName, "Plugin", LockType.read);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			cbc.error("releasing the read lock for " + dbName + "failed. process name=> plugin");
+			return;
+		}
         DBRunner r = dbrmap.get(dbName);
         if (r != null) {
             try {
