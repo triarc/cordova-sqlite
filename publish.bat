@@ -1,1 +1,2 @@
 plugman publish .
+PAUSE
