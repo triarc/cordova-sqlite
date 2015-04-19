@@ -95,7 +95,7 @@ public class SQLitePlugin extends CordovaPlugin {
         boolean status = true;
         JSONObject o;
         String dbname;
-
+        
         switch (action) {
             case open:
                 o = args.getJSONObject(0);
@@ -196,14 +196,6 @@ public class SQLitePlugin extends CordovaPlugin {
     // --------------------------------------------------------------------------
 
     private void startDatabase(String dbname, CallbackContext cbc) {
-    	try {
-			InterprocessLock.lock(this.webView.getContext(), dbname, "Plugin", LockType.read);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			cbc.error("aquiring the read lock for " + dbname + "failed. process name=> plugin");
-			return;
-		}
         // TODO: is it an issue that we can orphan an existing thread?  What should we do here?
         // If we re-use the existing DBRunner it might be in the process of closing...
         DBRunner r = dbrmap.get(dbname);
@@ -238,7 +230,14 @@ public class SQLitePlugin extends CordovaPlugin {
             if (!dbfile.exists()) {
                 dbfile.getParentFile().mkdirs();
             }
-
+            try {
+    			InterprocessLock.lock(this.webView.getContext(), dbname, "Plugin", LockType.read);
+    		} catch (Exception e) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    			cbc.error("aquiring the read lock for " + dbname + "failed. process name=> plugin");
+    			throw e;
+    		}
             Log.v("info", "Open sqlite db: " + dbfile.getAbsolutePath());
 
             SQLiteDatabase mydb = SQLiteDatabase.openOrCreateDatabase(dbfile, null);
@@ -256,16 +255,9 @@ public class SQLitePlugin extends CordovaPlugin {
      * Close a database (in another thread).
      *
      * @param dbName   The name of the database file
+     * @param lockName 
      */
     private void closeDatabase(String dbName, CallbackContext cbc) {
-    	try {
-			InterprocessLock.release(this.webView.getContext(), dbName, "Plugin", LockType.read);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			cbc.error("releasing the read lock for " + dbName + "failed. process name=> plugin");
-			return;
-		}
         DBRunner r = dbrmap.get(dbName);
         if (r != null) {
             try {
@@ -290,8 +282,14 @@ public class SQLitePlugin extends CordovaPlugin {
      */
     private void closeDatabaseNow(String dbName) {
         SQLiteDatabase mydb = this.getDatabase(dbName);
-
         if (mydb != null) {
+        	try {
+    			InterprocessLock.release(this.webView.getContext(), dbName, "Plugin", LockType.read);
+    		} catch (Exception e) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    			return;
+    		}
             mydb.close();
         }
     }
@@ -817,10 +815,10 @@ public class SQLitePlugin extends CordovaPlugin {
 
             if (dbq != null && dbq.close) {
                 try {
-                    dbrmap.remove(dbname); // (should) remove ourself
-
                     closeDatabaseNow(dbname);
-
+                    
+                    dbrmap.remove(dbname); // (should) remove ourself
+                    
                     if (!dbq.delete) {
                     	 dbq.cbc.success();
                     } else {
