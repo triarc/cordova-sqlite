@@ -193,7 +193,7 @@ public class SQLitePlugin extends CordovaPlugin {
 
     // --------------------------------------------------------------------------
     // LOCAL METHODS
-    // --------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     private void startDatabase(String dbname, CallbackContext cbc) {
         // TODO: is it an issue that we can orphan an existing thread?  What should we do here?
@@ -225,26 +225,11 @@ public class SQLitePlugin extends CordovaPlugin {
                 throw new Exception("database already open");
             }
 
-            File dbfile = this.cordova.getActivity().getDatabasePath(dbname);
-
-            if (!dbfile.exists()) {
-                dbfile.getParentFile().mkdirs();
-            }
-            try {
-    			InterprocessLock.lock(this.webView.getContext(), dbname, "Plugin", LockType.read);
-    		} catch (Exception e) {
-    			// TODO Auto-generated catch block
-    			e.printStackTrace();
-    			cbc.error("aquiring the read lock for " + dbname + "failed. process name=> plugin");
-    			throw e;
-    		}
-            Log.v("info", "Open sqlite db: " + dbfile.getAbsolutePath());
-
-            SQLiteDatabase mydb = SQLiteDatabase.openOrCreateDatabase(dbfile, null);
-
+            SQLiteDatabase db = SQLiteAccess.getInstance(this.webView.getContext()).requestDb(dbname);
+            
             cbc.success();
 
-            return mydb;
+            return db;
         } catch (SQLiteException e) {
             cbc.error("can't open database " + e);
             throw e;
@@ -283,14 +268,7 @@ public class SQLitePlugin extends CordovaPlugin {
     private void closeDatabaseNow(String dbName) {
         SQLiteDatabase mydb = this.getDatabase(dbName);
         if (mydb != null) {
-        	try {
-    			InterprocessLock.release(this.webView.getContext(), dbName, "Plugin", LockType.read);
-    		} catch (Exception e) {
-    			// TODO Auto-generated catch block
-    			e.printStackTrace();
-    			return;
-    		}
-            mydb.close();
+            SQLiteAccess.getInstance(this.webView.getContext()).releaseDb(dbName);
         }
     }
 
