@@ -5,7 +5,6 @@
     version="1.0.5">
 
     <name>Triarc SQLitePlugin</name>
-	<dependency id="com.triarc.interprocesslock" url="https://github.com/triarc/cordova-interprocess-lock.git"/>
     <license>MIT</license>
 
     <description>Native interface to SQLite for PhoneGap/Cordova. Allows you to use more storage and provides more flexibility than the standard Web SQL database (window.openDatabase).</description>
