@@ -6,22 +6,9 @@
 
 package org.pgsqlite;
 
-import android.annotation.SuppressLint;
-import android.database.Cursor;
-import android.database.CursorWindow;
-import android.database.sqlite.SQLiteCursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
-import android.database.sqlite.SQLiteStatement;
-import android.util.Base64;
-import android.util.Log;
-
 import java.io.File;
-import java.io.IOException;
-import java.lang.IllegalArgumentException;
-import java.lang.Number;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,8 +19,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.triarc.InterprocessLock;
-import com.triarc.LockType;
+import android.annotation.SuppressLint;
+import android.database.Cursor;
+import android.database.CursorWindow;
+import android.database.sqlite.SQLiteCursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
+import android.database.sqlite.SQLiteStatement;
+import android.util.Base64;
+import android.util.Log;
 
 public class SQLitePlugin extends CordovaPlugin {
 
